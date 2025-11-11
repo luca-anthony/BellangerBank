@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Class</title>
+</head>
+<body>
+<h2>Add Class</h2>
+<form method="post">
+    Class Name: <input name="class_name" required><br>
+    Students (comma-separated usernames): <input name="students" required><br>
+    <button type="submit">Add Class</button>
+</form>
+<a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>

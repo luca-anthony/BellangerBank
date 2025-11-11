@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Student</title>
+</head>
+<body>
+    <h2>Class: {{ class_name.replace('_',' ').title() }}</h2>
+    <h3>Select your account:</h3>
+    <ul>
+        {% for student, data in students.items() %}
+            <li><a href="{{ url_for('user_password_page', class_name=class_name, username=student) }}">{{ student }}</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Back to Classes</a>
+</body>
+</html>

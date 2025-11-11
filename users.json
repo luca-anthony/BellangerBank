@@ -1,18 +1,31 @@
 {
-    "admin": {"password": "ADMIN829381", "role": "admin"},
-    "dev": {"password": "luca09182", "role": "developer"},
-    "kumarn": {"password": "kumarpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "kennedyn": {"password": "kenpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "luca2n": {"password": "lucapw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "lucan": {"password": "lucapw2", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "calebn": {"password": "calebpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "tyn": {"password": "typw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "ashlynn": {"password": "ashpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "stevien": {"password": "stepw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "aubreyn": {"password": "aubpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "katn": {"password": "katpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "kasen": {"password": "kaspw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "ethann": {"password": "ethpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "kayn": {"password": "kaypw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
-    "reesen": {"password": "reespw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []}
+    "users": {
+        "admin": {"password": "ADMIN829381", "role": "admin"},
+        "dev": {"password": "luca09182", "role": "developer"}
+    },
+    "classes": {
+        "7th_grade": {
+            "students": {
+                "kumarn": {"password": "kumarpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "kennedyn": {"password": "kenpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "luca2n": {"password": "lucapw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "lucan": {"password": "lucapw2", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "calebn": {"password": "calebpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "tyn": {"password": "typw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "ashlynn": {"password": "ashpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "stevien": {"password": "stepw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "aubreyn": {"password": "aubpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "katn": {"password": "katpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "kasen": {"password": "kaspw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "ethann": {"password": "ethpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "kayn": {"password": "kaypw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []},
+                "reesen": {"password": "reespw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []}
+            }
+        },
+        "6th_grade": {
+            "students": {
+                "jimbob": {"password": "jimbobpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": null, "orders": []}
+            }
+        }
+    }
 }

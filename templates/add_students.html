@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Students to {{ class_name.replace('_',' ').title() }}</title>
+</head>
+<body>
+<h2>Add Students to {{ class_name.replace('_',' ').title() }}</h2>
+<form method="post">
+    Students (comma-separated usernames): <input name="students" required><br>
+    <button type="submit">Add Students</button>
+</form>
+<a href="{{ url_for('index') }}">Back to Classes</a>
+</body>
+</html>
