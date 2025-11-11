@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Students to {{ class_name.replace('_',' ').title() }}</title>
+<title>Add Student</title>
+<style>
+body { font-family: Arial; text-align: center; background: #f4f4f4; margin-top: 50px; }
+input { padding: 10px; margin: 10px; }
+button { padding: 10px 20px; background: #0074D9; color: white; border: none; border-radius: 5px; }
+button:hover { background: #005fa3; }
+</style>
 </head>
 <body>
-<h2>Add Students to {{ class_name.replace('_',' ').title() }}</h2>
+<h1>Add Student to {{ class_name.replace('_',' ').title() }}</h1>
 <form method="post">
-    Students (comma-separated usernames): <input name="students" required><br>
-    <button type="submit">Add Students</button>
+<input name="student_name" placeholder="Student username" required><br>
+<button type="submit">Add Student</button>
 </form>
-<a href="{{ url_for('index') }}">Back to Classes</a>
+<p><a href="{{ url_for('admin') }}">Back to Admin</a></p>
 </body>
 </html>

@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Class</title>
+<title>Add Class</title>
+<style>
+body { font-family: Arial; text-align: center; background: #f4f4f4; margin-top: 50px; }
+input { padding: 10px; margin: 10px; }
+button { padding: 10px 20px; background: #0074D9; color: white; border: none; border-radius: 5px; }
+button:hover { background: #005fa3; }
+</style>
 </head>
 <body>
-<h2>Add Class</h2>
+<h1>Add New Class</h1>
 <form method="post">
-    Class Name: <input name="class_name" required><br>
-    Students (comma-separated usernames): <input name="students" required><br>
-    <button type="submit">Add Class</button>
+<input name="class_name" placeholder="Class name" required><br>
+<input name="students" placeholder="Comma-separated student names" required><br>
+<button type="submit">Add Class</button>
 </form>
-<a href="{{ url_for('index') }}">Back to Home</a>
+<p><a href="{{ url_for('admin') }}">Back to Admin</a></p>
 </body>
 </html>

@@ -2,15 +2,21 @@
 <html>
 <head>
     <title>Bellanger's Bank</title>
+    <style>
+        body { font-family: Arial; text-align: center; background: #f4f4f4; }
+        h1 { margin-top: 30px; }
+        .class-list { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+        a { background: #0074D9; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 5px; }
+        a:hover { background: #005fa3; }
+    </style>
 </head>
 <body>
     <h1>💰 Bellanger's Bank 💰</h1>
     <h3>Select a class:</h3>
-    <ul>
-        {% for class_name, class_data in classes.items() %}
-            <li><a href="{{ url_for('class_select', class_name=class_name) }}">{{ class_name.replace('_',' ').title() }}</a> - <a href="{{ url_for('add_students', class_name=class_name) }}">Add Students: Admin</a></li>
+    <div class="class-list">
+        {% for class_name in classes.keys() %}
+            <a href="{{ url_for('class_select', class_name=class_name) }}">{{ class_name.replace('_',' ').title() }}</a>
         {% endfor %}
-    </ul>
-    <a href="{{ url_for('add_class') }}">Add Class: Admin</a>
+    </div>
 </body>
 </html>
