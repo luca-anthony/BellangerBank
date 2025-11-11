@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Bellanger's Bank</title>
+    <title>Classes</title>
     <style>
         body { font-family: Arial; text-align: center; background: #f4f4f4; }
-        h1 { margin-top: 30px; }
-        .class-list { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
-        a { background: #0074D9; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 5px; }
-        a:hover { background: #005fa3; }
+        .card { background: white; margin: 20px auto; padding: 20px; border-radius: 10px; width: 300px; box-shadow: 0 0 10px #ccc; }
+        a { text-decoration: none; color: #0074D9; font-weight: bold; }
+        a:hover { color: #005fa3; }
     </style>
 </head>
 <body>
-    <h1>💰 Bellanger's Bank 💰</h1>
-    <h3>Select a class:</h3>
-    <div class="class-list">
-        {% for class_name in classes.keys() %}
+    <h1>📚 Classes</h1>
+    {% for class_name in classes %}
+        <div class="card">
             <a href="{{ url_for('class_select', class_name=class_name) }}">{{ class_name.replace('_',' ').title() }}</a>
-        {% endfor %}
-    </div>
+        </div>
+    {% else %}
+        <p>No classes yet.</p>
+    {% endfor %}
+
+    <h2>Special Access</h2>
+    <div class="card"><a href="{{ url_for('developer') }}">Developer Download</a></div>
+    <div class="card"><a href="{{ url_for('admin') }}">Admin Panel</a></div>
 </body>
 </html>

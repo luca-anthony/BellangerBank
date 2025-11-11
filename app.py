@@ -37,12 +37,12 @@ def save_users():
 
 # --- Routes ---
 
-# Home: pick class
+# Home page: show classes + dev/admin
 @app.route('/')
 def index():
-    return render_template("index.html", classes=USERS.get("classes", {}))
+    return render_template("index.html", classes=USERS.get("classes", {}), USERS=USERS)
 
-# Select student within a class
+# Show students in a class
 @app.route('/class/<class_name>')
 def class_select(class_name):
     class_name = escape(class_name)
@@ -52,7 +52,7 @@ def class_select(class_name):
     students = USERS["classes"][class_name]["students"]
     return render_template("class_select.html", class_name=class_name, students=students)
 
-# Password page
+# Student login page
 @app.route('/user/<class_name>/<username>')
 def user_password_page(class_name, username):
     class_name = escape(class_name)
@@ -73,9 +73,6 @@ def authenticate(class_name, username):
         session["user"] = username
         session["class"] = class_name
         return redirect(url_for("student"))
-    elif username in USERS["users"] and entered == USERS["users"][username]["password"]:
-        session["user"] = username
-        return redirect(url_for("admin" if USERS["users"][username]["role"]=="admin" else "developer"))
     else:
         flash("Incorrect password.")
         return redirect(url_for('user_password_page', class_name=class_name, username=username))
@@ -88,7 +85,7 @@ def logout():
     flash("Logged out.")
     return redirect(url_for('index'))
 
-# Admin panel
+# Admin panel: view students, adjust balances
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "admin":
@@ -100,7 +97,7 @@ def admin():
         target = request.form.get("student")
         try:
             amount = float(request.form.get("amount", 0))
-        except:
+        except ValueError:
             amount = 0
         if class_name in USERS["classes"] and target in USERS["classes"][class_name]["students"]:
             USERS["classes"][class_name]["students"][target]["balance"] += amount
@@ -111,7 +108,7 @@ def admin():
 
     return render_template("admin.html", classes=USERS.get("classes", {}))
 
-# Add class (admin)
+# Add new class
 @app.route('/add_class', methods=['GET', 'POST'])
 def add_class():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "admin":
@@ -122,48 +119,59 @@ def add_class():
         class_name = request.form.get("class_name").strip()
         students = request.form.get("students")
         if not class_name:
-            flash("Enter a class name.")
-        elif class_name in USERS["classes"]:
+            flash("Class name required.")
+        elif class_name in USERS.get("classes", {}):
             flash("Class already exists.")
         else:
             USERS.setdefault("classes", {})[class_name] = {"students": {}}
             for student in students.split(","):
                 s = student.strip()
                 if s:
-                    USERS["classes"][class_name]["students"][s] = {"password": s+"pw","role":"student","balance":100,"savings_balance":0,"lock_until":None,"orders":[]}
+                    USERS["classes"][class_name]["students"][s] = {
+                        "password": s+"pw",
+                        "role": "student",
+                        "balance": 100,
+                        "savings_balance": 0,
+                        "lock_until": None,
+                        "orders": []
+                    }
             save_users()
             flash(f"Class {class_name} added with students: {students}")
     return render_template("add_class.html")
 
-# Add student to existing class (admin)
-@app.route('/add_student/<class_name>', methods=['GET', 'POST'])
-def add_student(class_name):
+# Add students to existing class
+@app.route('/add_student', methods=['GET', 'POST'])
+def add_student():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "admin":
         flash("Admin access required.")
         return redirect(url_for('index'))
 
-    class_name = escape(class_name)
-    if class_name not in USERS["classes"]:
-        flash("Unknown class.")
-        return redirect(url_for('index'))
-
     if request.method == "POST":
-        student_name = request.form.get("student_name").strip()
-        if student_name in USERS["classes"][class_name]["students"]:
-            flash("Student already exists.")
+        class_name = request.form.get("class_name")
+        students = request.form.get("students")
+        if class_name not in USERS["classes"]:
+            flash("Class does not exist.")
         else:
-            USERS["classes"][class_name]["students"][student_name] = {"password": student_name+"pw","role":"student","balance":100,"savings_balance":0,"lock_until":None,"orders":[]}
+            for s in students.split(","):
+                s = s.strip()
+                if s and s not in USERS["classes"][class_name]["students"]:
+                    USERS["classes"][class_name]["students"][s] = {
+                        "password": s+"pw",
+                        "role": "student",
+                        "balance": 100,
+                        "savings_balance": 0,
+                        "lock_until": None,
+                        "orders": []
+                    }
             save_users()
-            flash(f"Student {student_name} added to {class_name}.")
-    return render_template("add_student.html", class_name=class_name)
+            flash(f"Added students: {students} to {class_name}")
+    return render_template("add_student.html", classes=USERS.get("classes", {}))
 
-# Student page
-@app.route('/student')
+# Student dashboard
+@app.route('/student', methods=['GET', 'POST'])
 def student():
     if "user" not in session or "class" not in session:
-        flash("Login required.")
         return redirect(url_for('index'))
-
     class_name = session["class"]
     user = session["user"]
     student_data = USERS["classes"][class_name]["students"][user]
@@ -172,7 +180,7 @@ def student():
     for o in student_data["orders"]:
         if not o.get("notified", True) and o["status"] != "Pending":
             if o["status"] == "Approved":
-                notifications.append(f"ORDER: {o['item']} ({o['date']}) APPROVED! Go see your teacher.")
+                notifications.append(f"ORDER: {o['item']} ({o['date']}) APPROVED!! Go see your teacher to claim your reward")
             elif o["status"] == "Denied":
                 notifications.append(f"ORDER: {o['item']} ({o['date']}) DENIED. Reason: {o['reason']}")
             o["notified"] = True
@@ -181,18 +189,20 @@ def student():
     projected = student_data["savings_balance"] * (1 + DEFAULT_INTEREST_RATE)
     return render_template("student.html", username=user, class_name=class_name, info=student_data, notifications=notifications, interest_rate=DEFAULT_INTEREST_RATE*100, projected_savings=projected)
 
-# Savings
+# Savings deposit
 @app.route('/savings', methods=['POST'])
 def savings():
     if "user" not in session or "class" not in session:
-        flash("Login required.")
         return redirect(url_for('index'))
-
     class_name = session["class"]
     user = session["user"]
     student_data = USERS["classes"][class_name]["students"][user]
 
-    amount = float(request.form.get("amount", 0))
+    try:
+        amount = float(request.form.get("amount", 0))
+    except ValueError:
+        amount = 0
+
     if amount <= 0 or amount > student_data["balance"]:
         flash("Invalid amount.")
     else:
@@ -205,13 +215,11 @@ def savings():
 
     return redirect(url_for('student'))
 
-# Store
+# Store purchases
 @app.route('/store', methods=['POST'])
 def store():
     if "user" not in session or "class" not in session:
-        flash("Login required.")
         return redirect(url_for('index'))
-
     class_name = session["class"]
     user = session["user"]
     student_data = USERS["classes"][class_name]["students"][user]
@@ -255,7 +263,6 @@ def deny_order(class_name, student, idx):
 @app.route('/leaderboard')
 def leaderboard():
     if "user" not in session:
-        flash("Login required.")
         return redirect(url_for('index'))
 
     leaderboard_data = []
@@ -266,7 +273,7 @@ def leaderboard():
     leaderboard_data.sort(key=lambda x: x["total"], reverse=True)
     return render_template("leaderboard.html", leaderboard=leaderboard_data, enumerate=enumerate)
 
-# Developer download
+# Developer: download all files
 @app.route('/developer')
 def developer():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "developer":
@@ -280,7 +287,6 @@ def developer():
                     zipf.write(os.path.join(folder, file))
     mem_zip.seek(0)
     return send_file(mem_zip, download_name="bellangerbank_files.zip", as_attachment=True)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
