@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from datetime import datetime, timedelta
 from markupsafe import escape
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 app.secret_key = "change_this_secret"
 
 # --- Fake database ---
@@ -24,6 +24,7 @@ USERS = {
     "reesen": {"password": "reespw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []}
 }
 
+# --- Index / user selection ---
 @app.route('/')
 def index():
     return render_template("index.html", users=USERS)
@@ -73,7 +74,7 @@ def admin():
         else:
             flash("Invalid student.")
 
-    return render_template("admin.html", users=USERS)
+    return render_template("admin.html", users=USERS, enumerate=enumerate)
 
 # --- Student Dashboard ---
 @app.route('/student', methods=['GET', 'POST'])
@@ -157,6 +158,6 @@ def deny_order(student, idx):
     flash(f"Order denied for {student}")
     return redirect(url_for('admin'))
 
+# --- Run app ---
 if __name__ == '__main__':
     app.run(debug=True)
-    
