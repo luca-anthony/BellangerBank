@@ -1,26 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Classes</title>
+    <meta charset="UTF-8">
+    <title>Bellanger Bank | Classes</title>
     <style>
-        body { font-family: Arial; text-align: center; background: #f4f4f4; }
-        .card { background: white; margin: 20px auto; padding: 20px; border-radius: 10px; width: 300px; box-shadow: 0 0 10px #ccc; }
-        a { text-decoration: none; color: #0074D9; font-weight: bold; }
-        a:hover { color: #005fa3; }
+        body {
+            background: #f8f8f8;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+        }
+        .class-box {
+            display: inline-block;
+            background: white;
+            padding: 20px;
+            margin: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 250px;
+        }
+        a.button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 8px 4px;
+        }
+        a.button:hover {
+            background: #0056b3;
+        }
+        .footer-links {
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
-    <h1>📚 Classes</h1>
+    <h1>Bellanger Bank</h1>
+
+    <h3>Select a Class</h3>
     {% for class_name in classes %}
-        <div class="card">
-            <a href="{{ url_for('class_select', class_name=class_name) }}">{{ class_name.replace('_',' ').title() }}</a>
+        <div class="class-box">
+            <h3>{{ class_name }}</h3>
+            <a href="{{ url_for('class_select', class_name=class_name) }}" class="button">View Students</a>
+            <a href="{{ url_for('leaderboard', class_name=class_name) }}" class="button">Leaderboard</a>
         </div>
     {% else %}
-        <p>No classes yet.</p>
+        <p>No classes yet. Admins can add classes after logging in.</p>
     {% endfor %}
 
-    <h2>Special Access</h2>
-    <div class="card"><a href="{{ url_for('developer') }}">Developer Download</a></div>
-    <div class="card"><a href="{{ url_for('admin') }}">Admin Panel</a></div>
+    <div class="footer-links">
+        <h3>Admin / Developer Access</h3>
+        <a href="{{ url_for('admin_login') }}" class="button">Admin Panel</a>
+        <a href="{{ url_for('admin_login') }}" class="button">Developer Download</a>
+    </div>
 </body>
 </html>

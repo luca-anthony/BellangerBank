@@ -30,19 +30,47 @@ else:
         "classes": {}
     }
 
-# --- Save helper ---
 def save_users():
     with open(USERS_FILE, "w") as f:
         json.dump(USERS, f, indent=4, default=str)
 
 # --- Routes ---
 
-# Home page: show classes + dev/admin
 @app.route('/')
 def index():
+    """Home page: show classes and dev/admin links"""
     return render_template("index.html", classes=USERS.get("classes", {}), USERS=USERS)
 
-# Show students in a class
+# ----------- LOGIN ROUTE FOR ADMIN/DEV -----------
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if username in USERS["users"] and USERS["users"][username]["password"] == password:
+            session["user"] = username
+            role = USERS["users"][username]["role"]
+            flash(f"Logged in as {username} ({role})")
+
+            if role == "admin":
+                return redirect(url_for("admin"))
+            elif role == "developer":
+                return redirect(url_for("developer"))
+        else:
+            flash("Invalid credentials.")
+            return redirect(url_for("admin_login"))
+    return render_template("admin_login.html")
+
+@app.route('/logout')
+def logout():
+    session.pop("user", None)
+    session.pop("class", None)
+    flash("Logged out.")
+    return redirect(url_for('index'))
+
+# ----------- CLASS AND STUDENT ROUTES -----------
+
 @app.route('/class/<class_name>')
 def class_select(class_name):
     class_name = escape(class_name)
@@ -52,7 +80,6 @@ def class_select(class_name):
     students = USERS["classes"][class_name]["students"]
     return render_template("class_select.html", class_name=class_name, students=students)
 
-# Student login page
 @app.route('/user/<class_name>/<username>')
 def user_password_page(class_name, username):
     class_name = escape(class_name)
@@ -62,7 +89,6 @@ def user_password_page(class_name, username):
         return redirect(url_for('index'))
     return render_template("password.html", username=username, class_name=class_name)
 
-# Authenticate student
 @app.route('/auth/<class_name>/<username>', methods=['POST'])
 def authenticate(class_name, username):
     class_name = escape(class_name)
@@ -77,20 +103,13 @@ def authenticate(class_name, username):
         flash("Incorrect password.")
         return redirect(url_for('user_password_page', class_name=class_name, username=username))
 
-# Logout
-@app.route('/logout')
-def logout():
-    session.pop("user", None)
-    session.pop("class", None)
-    flash("Logged out.")
-    return redirect(url_for('index'))
+# ----------- ADMIN PANEL -----------
 
-# Admin panel: view students, adjust balances
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "admin":
         flash("Admin access required.")
-        return redirect(url_for('index'))
+        return redirect(url_for('admin_login'))
 
     if request.method == "POST" and 'amount' in request.form:
         class_name = request.form.get("class")
@@ -105,15 +124,15 @@ def admin():
             flash(f"Added ${amount:.2f} to {target}'s balance.")
         else:
             flash("Invalid student.")
-
     return render_template("admin.html", classes=USERS.get("classes", {}))
 
-# Add new class
+# ----------- ADD CLASS / STUDENTS -----------
+
 @app.route('/add_class', methods=['GET', 'POST'])
 def add_class():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "admin":
         flash("Admin access required.")
-        return redirect(url_for('index'))
+        return redirect(url_for('admin_login'))
 
     if request.method == "POST":
         class_name = request.form.get("class_name").strip()
@@ -128,7 +147,7 @@ def add_class():
                 s = student.strip()
                 if s:
                     USERS["classes"][class_name]["students"][s] = {
-                        "password": s+"pw",
+                        "password": s + "pw",
                         "role": "student",
                         "balance": 100,
                         "savings_balance": 0,
@@ -139,12 +158,11 @@ def add_class():
             flash(f"Class {class_name} added with students: {students}")
     return render_template("add_class.html")
 
-# Add students to existing class
 @app.route('/add_student', methods=['GET', 'POST'])
 def add_student():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "admin":
         flash("Admin access required.")
-        return redirect(url_for('index'))
+        return redirect(url_for('admin_login'))
 
     if request.method == "POST":
         class_name = request.form.get("class_name")
@@ -156,7 +174,7 @@ def add_student():
                 s = s.strip()
                 if s and s not in USERS["classes"][class_name]["students"]:
                     USERS["classes"][class_name]["students"][s] = {
-                        "password": s+"pw",
+                        "password": s + "pw",
                         "role": "student",
                         "balance": 100,
                         "savings_balance": 0,
@@ -167,7 +185,8 @@ def add_student():
             flash(f"Added students: {students} to {class_name}")
     return render_template("add_student.html", classes=USERS.get("classes", {}))
 
-# Student dashboard
+# ----------- STUDENT DASHBOARD -----------
+
 @app.route('/student', methods=['GET', 'POST'])
 def student():
     if "user" not in session or "class" not in session:
@@ -180,16 +199,17 @@ def student():
     for o in student_data["orders"]:
         if not o.get("notified", True) and o["status"] != "Pending":
             if o["status"] == "Approved":
-                notifications.append(f"ORDER: {o['item']} ({o['date']}) APPROVED!! Go see your teacher to claim your reward")
+                notifications.append(f"ORDER: {o['item']} ({o['date']}) APPROVED! Claim your reward.")
             elif o["status"] == "Denied":
                 notifications.append(f"ORDER: {o['item']} ({o['date']}) DENIED. Reason: {o['reason']}")
             o["notified"] = True
     save_users()
 
     projected = student_data["savings_balance"] * (1 + DEFAULT_INTEREST_RATE)
-    return render_template("student.html", username=user, class_name=class_name, info=student_data, notifications=notifications, interest_rate=DEFAULT_INTEREST_RATE*100, projected_savings=projected)
+    return render_template("student.html", username=user, class_name=class_name, info=student_data, notifications=notifications, interest_rate=DEFAULT_INTEREST_RATE * 100, projected_savings=projected)
 
-# Savings deposit
+# ----------- SAVINGS / STORE -----------
+
 @app.route('/savings', methods=['POST'])
 def savings():
     if "user" not in session or "class" not in session:
@@ -215,7 +235,6 @@ def savings():
 
     return redirect(url_for('student'))
 
-# Store purchases
 @app.route('/store', methods=['POST'])
 def store():
     if "user" not in session or "class" not in session:
@@ -234,13 +253,19 @@ def store():
     else:
         now = datetime.now(CENTRAL_TZ)
         student_data["balance"] -= prices[item]
-        student_data["orders"].append({"item": item,"date": now.isoformat(),"status":"Pending","reason":"","notified":False})
+        student_data["orders"].append({
+            "item": item,
+            "date": now.isoformat(),
+            "status": "Pending",
+            "reason": "",
+            "notified": False
+        })
         save_users()
         flash(f"Purchased {item}, waiting for teacher approval!")
-
     return redirect(url_for('student'))
 
-# Approve/Deny orders
+# ----------- ORDER MANAGEMENT -----------
+
 @app.route('/approve_order/<class_name>/<student>/<int:idx>')
 def approve_order(class_name, student, idx):
     USERS["classes"][class_name]["students"][student]["orders"][idx]["status"] = "Approved"
@@ -259,26 +284,33 @@ def deny_order(class_name, student, idx):
     flash(f"Order denied for {student}")
     return redirect(url_for('admin'))
 
-# Leaderboard
-@app.route('/leaderboard')
-def leaderboard():
+# ----------- LEADERBOARD PER CLASS -----------
+
+@app.route('/leaderboard/<class_name>')
+def leaderboard(class_name):
     if "user" not in session:
         return redirect(url_for('index'))
 
-    leaderboard_data = []
-    for class_name, class_data in USERS.get("classes", {}).items():
-        for name, data in class_data["students"].items():
-            total = data["balance"] + data["savings_balance"]
-            leaderboard_data.append({"name": name, "total": total})
-    leaderboard_data.sort(key=lambda x: x["total"], reverse=True)
-    return render_template("leaderboard.html", leaderboard=leaderboard_data, enumerate=enumerate)
+    if class_name not in USERS.get("classes", {}):
+        flash("Class not found.")
+        return redirect(url_for('index'))
 
-# Developer: download all files
+    class_data = USERS["classes"][class_name]["students"]
+    leaderboard_data = [
+        {"name": name, "total": data["balance"] + data["savings_balance"]}
+        for name, data in class_data.items()
+    ]
+    leaderboard_data.sort(key=lambda x: x["total"], reverse=True)
+    return render_template("leaderboard.html", leaderboard=leaderboard_data, class_name=class_name, enumerate=enumerate)
+
+# ----------- DEVELOPER DOWNLOAD -----------
+
 @app.route('/developer')
 def developer():
     if "user" not in session or USERS["users"].get(session["user"], {}).get("role") != "developer":
         flash("Developer access required.")
-        return redirect(url_for('index'))
+        return redirect(url_for('admin_login'))
+
     mem_zip = io.BytesIO()
     with zipfile.ZipFile(mem_zip, 'w') as zipf:
         for folder, _, files in os.walk('.'):
@@ -287,6 +319,8 @@ def developer():
                     zipf.write(os.path.join(folder, file))
     mem_zip.seek(0)
     return send_file(mem_zip, download_name="bellangerbank_files.zip", as_attachment=True)
+
+# ----------- RUN -----------
 
 if __name__ == "__main__":
     app.run(debug=True)
