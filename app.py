@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import json
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from datetime import datetime, timedelta
 from markupsafe import escape
-from zoneinfo import ZoneInfo  # For timezone support
+from zoneinfo import ZoneInfo
+import os
 
 app = Flask(__name__)
 app.secret_key = "change_this_secret"
@@ -12,24 +14,24 @@ DEFAULT_INTEREST_RATE = 0.05  # 5% per week
 # --- Timezone ---
 CENTRAL_TZ = ZoneInfo("America/Chicago")
 
-# --- Fake database ---
-USERS = {
-    "admin": {"password": "ADMIN829381", "role": "admin"},
-    "kumarn": {"password": "kumarpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "kennedyn": {"password": "kenpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "luca2n": {"password": "lucapw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "lucan": {"password": "lucapw2", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "calebn": {"password": "calebpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "tyn": {"password": "typw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "ashlynn": {"password": "ashpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "stevien": {"password": "stepw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "aubreyn": {"password": "aubpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "katn": {"password": "katpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "kasen": {"password": "kaspw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "ethann": {"password": "ethpw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "kayn": {"password": "kaypw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []},
-    "reesen": {"password": "reespw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []}
-}
+# --- Paths ---
+USERS_FILE = "users.json"
+
+# --- Load users ---
+if os.path.exists(USERS_FILE):
+    with open(USERS_FILE, "r") as f:
+        USERS = json.load(f)
+else:
+    USERS = {
+        "admin": {"password": "ADMIN829381", "role": "admin"},
+        "dev": {"password": "luca09182", "role": "developer"}
+        # add other students here or via users.json
+    }
+
+# --- Save users helper ---
+def save_users():
+    with open(USERS_FILE, "w") as f:
+        json.dump(USERS, f, indent=4, default=str)
 
 # --- Routes ---
 
@@ -78,6 +80,7 @@ def admin():
             amount = 0
         if target in USERS and USERS[target]["role"] == "student":
             USERS[target]["balance"] += amount
+            save_users()
             flash(f"Added ${amount:.2f} to {target}'s balance.")
         else:
             flash("Invalid student.")
@@ -102,6 +105,7 @@ def student():
             elif o["status"] == "Denied":
                 notifications.append(f"ORDER: {o['item']} ({o['date']}) DENIED. Reason: {o['reason']}")
             o["notified"] = True
+    save_users()
 
     projected = USERS[user]["savings_balance"] * (1 + DEFAULT_INTEREST_RATE)
 
@@ -128,8 +132,9 @@ def savings():
         now = datetime.now(CENTRAL_TZ)
         USERS[user]["balance"] -= amount
         USERS[user]["savings_balance"] += amount
-        USERS[user]["lock_until"] = now + timedelta(days=7)
-        flash(f"${amount:.2f} moved to savings. Locked until {USERS[user]['lock_until'].strftime('%Y-%m-%d %H:%M %Z')}")
+        USERS[user]["lock_until"] = now.isoformat()
+        save_users()
+        flash(f"${amount:.2f} moved to savings. Locked until {now + timedelta(days=7):%Y-%m-%d %H:%M %Z}")
 
     return redirect(url_for('student'))
 
@@ -151,11 +156,12 @@ def store():
         USERS[user]["balance"] -= prices[item]
         USERS[user]["orders"].append({
             "item": item,
-            "date": now.strftime("%Y-%m-%d %H:%M %Z"),
+            "date": now.isoformat(),
             "status": "Pending",
             "reason": "",
             "notified": False
         })
+        save_users()
         flash(f"Purchased {item}, waiting for teacher approval!")
 
     return redirect(url_for('student'))
@@ -165,6 +171,7 @@ def store():
 def approve_order(student, idx):
     USERS[student]["orders"][idx]["status"] = "Approved"
     USERS[student]["orders"][idx]["notified"] = False
+    save_users()
     flash(f"Order approved for {student}")
     return redirect(url_for('admin'))
 
@@ -174,6 +181,7 @@ def deny_order(student, idx):
     USERS[student]["orders"][idx]["status"] = "Denied"
     USERS[student]["orders"][idx]["reason"] = reason
     USERS[student]["orders"][idx]["notified"] = False
+    save_users()
     flash(f"Order denied for {student}")
     return redirect(url_for('admin'))
 
@@ -191,6 +199,25 @@ def leaderboard():
 
     leaderboard_data.sort(key=lambda x: x["total"], reverse=True)
     return render_template("leaderboard.html", leaderboard=leaderboard_data, enumerate=enumerate)
+
+# --- Developer: download all files ---
+@app.route('/developer')
+def developer():
+    if "user" not in session or USERS[session["user"]]["role"] != "developer":
+        flash("Developer access required.")
+        return redirect(url_for('index'))
+
+    import zipfile
+    import io
+
+    mem_zip = io.BytesIO()
+    with zipfile.ZipFile(mem_zip, 'w') as zipf:
+        for folder, _, files in os.walk('.'):
+            for file in files:
+                if file.endswith(('.py', '.html', '.json', '.txt', '.md')):
+                    zipf.write(os.path.join(folder, file))
+    mem_zip.seek(0)
+    return send_file(mem_zip, download_name="bellangerbank_files.zip", as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
