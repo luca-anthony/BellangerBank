@@ -1,12 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from datetime import datetime, timedelta
 from markupsafe import escape
+from zoneinfo import ZoneInfo  # For timezone support
 
 app = Flask(__name__)
 app.secret_key = "change_this_secret"
 
 # --- Interest rate ---
 DEFAULT_INTEREST_RATE = 0.05  # 5% per week
+
+# --- Timezone ---
+CENTRAL_TZ = ZoneInfo("America/Chicago")
 
 # --- Fake database ---
 USERS = {
@@ -121,10 +125,11 @@ def savings():
     if amount <= 0 or amount > USERS[user]["balance"]:
         flash("Invalid amount.")
     else:
+        now = datetime.now(CENTRAL_TZ)
         USERS[user]["balance"] -= amount
         USERS[user]["savings_balance"] += amount
-        USERS[user]["lock_until"] = datetime.now() + timedelta(days=7)
-        flash(f"${amount:.2f} moved to savings. Locked until {USERS[user]['lock_until'].strftime('%Y-%m-%d')}")
+        USERS[user]["lock_until"] = now + timedelta(days=7)
+        flash(f"${amount:.2f} moved to savings. Locked until {USERS[user]['lock_until'].strftime('%Y-%m-%d %H:%M %Z')}")
 
     return redirect(url_for('student'))
 
@@ -142,10 +147,11 @@ def store():
     elif USERS[user]["balance"] < prices[item]:
         flash("Not enough funds.")
     else:
+        now = datetime.now(CENTRAL_TZ)
         USERS[user]["balance"] -= prices[item]
         USERS[user]["orders"].append({
             "item": item,
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "date": now.strftime("%Y-%m-%d %H:%M %Z"),
             "status": "Pending",
             "reason": "",
             "notified": False
