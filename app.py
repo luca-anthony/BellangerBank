@@ -2,8 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from datetime import datetime, timedelta
 from markupsafe import escape
 
-app = Flask(__name__, template_folder="templates")
+app = Flask(__name__)
 app.secret_key = "change_this_secret"
+
+# --- Interest rate ---
+DEFAULT_INTEREST_RATE = 0.05  # 5% per week
 
 # --- Fake database ---
 USERS = {
@@ -24,7 +27,8 @@ USERS = {
     "reesen": {"password": "reespw", "role": "student", "balance": 100.0, "savings_balance": 0.0, "lock_until": None, "orders": []}
 }
 
-# --- Index / user selection ---
+# --- Routes ---
+
 @app.route('/')
 def index():
     return render_template("index.html", users=USERS)
@@ -55,7 +59,7 @@ def logout():
     flash("Logged out.")
     return redirect(url_for('index'))
 
-# --- Admin Panel ---
+# --- Admin ---
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if "user" not in session or USERS[session["user"]]["role"] != "admin":
@@ -76,7 +80,7 @@ def admin():
 
     return render_template("admin.html", users=USERS, enumerate=enumerate)
 
-# --- Student Dashboard ---
+# --- Student ---
 @app.route('/student', methods=['GET', 'POST'])
 def student():
     if "user" not in session:
@@ -95,7 +99,16 @@ def student():
                 notifications.append(f"ORDER: {o['item']} ({o['date']}) DENIED. Reason: {o['reason']}")
             o["notified"] = True
 
-    return render_template("student.html", username=user, info=USERS[user], notifications=notifications)
+    projected = USERS[user]["savings_balance"] * (1 + DEFAULT_INTEREST_RATE)
+
+    return render_template(
+        "student.html",
+        username=user,
+        info=USERS[user],
+        notifications=notifications,
+        interest_rate=DEFAULT_INTEREST_RATE * 100,
+        projected_savings=projected
+    )
 
 # --- Savings ---
 @app.route('/savings', methods=['POST'])
@@ -141,7 +154,7 @@ def store():
 
     return redirect(url_for('student'))
 
-# --- Order Management (Admin) ---
+# --- Orders (Admin) ---
 @app.route('/approve_order/<student>/<int:idx>')
 def approve_order(student, idx):
     USERS[student]["orders"][idx]["status"] = "Approved"
@@ -158,6 +171,20 @@ def deny_order(student, idx):
     flash(f"Order denied for {student}")
     return redirect(url_for('admin'))
 
-# --- Run app ---
-if __name__ == '__main__':
+# --- Leaderboard ---
+@app.route('/leaderboard')
+def leaderboard():
+    if "user" not in session:
+        return redirect(url_for('index'))
+
+    leaderboard_data = []
+    for name, data in USERS.items():
+        if data["role"] == "student":
+            total = data["balance"] + data["savings_balance"]
+            leaderboard_data.append({"name": name, "total": total})
+
+    leaderboard_data.sort(key=lambda x: x["total"], reverse=True)
+    return render_template("leaderboard.html", leaderboard=leaderboard_data, enumerate=enumerate)
+
+if __name__ == "__main__":
     app.run(debug=True)

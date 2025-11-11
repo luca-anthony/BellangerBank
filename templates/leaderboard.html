@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Leaderboard</title>
+    <style>
+        body { font-family: Arial; text-align: center; background: #f4f4f4; }
+        table { margin: 40px auto; border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid #ddd; padding: 10px; }
+        th { background: #0074D9; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🏆 Class Leaderboard 🏆</h1>
+    <table>
+        <tr><th>Rank</th><th>Student</th><th>Total Money</th></tr>
+        {% for idx, s in enumerate(leaderboard, start=1) %}
+        <tr>
+            <td>{{ idx }}</td>
+            <td>{{ s.name }}</td>
+            <td>${{ "%.2f"|format(s.total) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="{{ url_for('student') }}">Back to Dashboard</a></p>
+</body>
+</html>

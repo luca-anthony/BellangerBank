@@ -27,10 +27,12 @@
 {% endif %}
 
 <div class="card">
-<h3>💵 Balance: ${{ "%.2f"|format(info['balance']) }}</h3>
-<h3>💰 Savings: ${{ "%.2f"|format(info['savings_balance']) }}</h3>
-{% if info['lock_until'] %}
-<p>Locked until: {{ info['lock_until'].strftime("%Y-%m-%d") }}</p>
+<h3>💵 Balance: ${{ "%.2f"|format(info.balance) }}</h3>
+<h3>💰 Savings: ${{ "%.2f"|format(info.savings_balance) }}</h3>
+<p>Interest Rate: {{ interest_rate }}%</p>
+<p>Projected after 1 week: ${{ "%.2f"|format(projected_savings) }}</p>
+{% if info.lock_until %}
+<p>Locked until: {{ info.lock_until.strftime("%Y-%m-%d") }}</p>
 {% endif %}
 </div>
 
@@ -54,17 +56,18 @@
 <h3>📦 Your Orders</h3>
 <table>
 <tr><th>Item</th><th>Date</th><th>Status</th><th>Reason</th></tr>
-{% for o in info['orders'] %}
+{% for o in info.orders %}
 <tr>
 <td>{{ o['item'] }}</td>
 <td>{{ o['date'] }}</td>
 <td>{{ o['status'] }}</td>
-<td>{{ o['reason'] if o['status'] == 'Denied' else '-' }}</td>
+<td>{{ o['reason'] }}</td>
 </tr>
 {% endfor %}
 </table>
 </div>
 
+<p><a href="{{ url_for('leaderboard') }}">🏆 Class Leaderboard</a></p>
 <p><a href="{{ url_for('logout') }}">Logout</a></p>
 </body>
 </html>

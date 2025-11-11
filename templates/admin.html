@@ -25,39 +25,43 @@ button:hover { background: #005fa3; }
 <h2>Student Accounts</h2>
 <table>
 <tr><th>Name</th><th>Balance</th><th>Savings</th><th>Locked Until</th></tr>
-{% for name, data in users.items() if data['role'] == "student" %}
+{% for name, data in users.items() %}
+{% if data['role'] == 'student' %}
 <tr>
 <td>{{ name }}</td>
 <td>${{ "%.2f"|format(data['balance']) }}</td>
 <td>${{ "%.2f"|format(data['savings_balance']) }}</td>
 <td>{{ data['lock_until'].strftime("%Y-%m-%d") if data['lock_until'] else "—" }}</td>
 </tr>
+{% endif %}
 {% endfor %}
 </table>
 
 <h2>🛍️ Orders</h2>
 <table>
 <tr><th>Student</th><th>Item</th><th>Date</th><th>Status</th><th>Action</th></tr>
-{% for name, data in users.items() if data['role']=="student" %}
-    {% for idx, o in enumerate(data['orders']) %}
-    <tr>
-    <td>{{ name }}</td>
-    <td>{{ o['item'] }}</td>
-    <td>{{ o['date'] }}</td>
-    <td>{{ o['status'] }}</td>
-    <td>
-        {% if o['status']=="Pending" %}
-        <a href="{{ url_for('approve_order', student=name, idx=idx) }}">✅ Approve</a>
-        <form action="{{ url_for('deny_order', student=name, idx=idx) }}" method="post" style="display:inline;">
-            <input type="text" name="reason" placeholder="Reason" required>
-            <button type="submit">❌ Deny</button>
-        </form>
-        {% else %}
-        {{ o['status'] }}
-        {% endif %}
-    </td>
-    </tr>
-    {% endfor %}
+{% for name, data in users.items() %}
+{% if data['role'] == 'student' %}
+{% for idx, o in enumerate(data['orders']) %}
+<tr>
+<td>{{ name }}</td>
+<td>{{ o['item'] }}</td>
+<td>{{ o['date'] }}</td>
+<td>{{ o['status'] }}</td>
+<td>
+{% if o['status'] == "Pending" %}
+<a href="{{ url_for('approve_order', student=name, idx=idx) }}">✅ Approve</a>
+<form action="{{ url_for('deny_order', student=name, idx=idx) }}" method="post" style="display:inline;">
+<input type="text" name="reason" placeholder="Reason" required>
+<button type="submit">❌ Deny</button>
+</form>
+{% else %}
+{{ o['status'] }}
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+{% endif %}
 {% endfor %}
 </table>
 
