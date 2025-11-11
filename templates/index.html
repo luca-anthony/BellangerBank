@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bellanger's Bank</title>
+    <style>
+        body { font-family: Arial; text-align: center; background: #f4f4f4; }
+        h1 { margin-top: 30px; }
+        .user-list { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+        a { background: #0074D9; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 5px; }
+        a:hover { background: #005fa3; }
+    </style>
+</head>
+<body>
+    <h1>💰 Bellanger's Bank 💰</h1>
+    <h3>Select your account:</h3>
+    <div class="user-list">
+        {% for name, data in users.items() %}
+            <a href="{{ url_for('user_password_page', username=name) }}">{{ name }}</a>
+        {% endfor %}
+    </div>
+</body>
+</html>

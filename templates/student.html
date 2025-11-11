@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ username }}'s Account</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; text-align: center; }
+        h1 { margin-top: 40px; }
+        .card { background: white; padding: 20px; margin: 20px auto; width: 300px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+        button { padding: 10px 20px; margin: 10px; background: #0074D9; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #005fa3; }
+        table { margin: 10px auto; border-collapse: collapse; width: 90%; }
+        th, td { border: 1px solid #ddd; padding: 5px; }
+    </style>
+</head>
+<body>
+<h1>Welcome, {{ username }}!</h1>
+
+{% if notifications %}
+<div class="card">
+<h3>🔔 Notifications</h3>
+<ul>
+{% for n in notifications %}
+<li>{{ n }}</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+
+<div class="card">
+<h3>💵 Balance: ${{ "%.2f"|format(info.balance) }}</h3>
+<h3>💰 Savings: ${{ "%.2f"|format(info.savings_balance) }}</h3>
+{% if info.lock_until %}
+<p>Locked until: {{ info.lock_until.strftime("%Y-%m-%d") }}</p>
+{% endif %}
+</div>
+
+<div class="card">
+<h3>Put money into savings:</h3>
+<form action="{{ url_for('savings') }}" method="post" onsubmit="return confirm('IF YOU DO THIS YOU WILL NOT BE ABLE TO ACCESS THE MONEY FOR A WEEK BUT YOU WILL BE ASSIGNED AN INTEREST RATE')">
+<input type="number" name="amount" step="0.01" placeholder="Amount" required>
+<button type="submit">Deposit to Savings</button>
+</form>
+</div>
+
+<div class="card">
+<h3>🎁 Store</h3>
+<form action="{{ url_for('store') }}" method="post" onsubmit="return confirm('Are you sure you want to spend money on this?')">
+<button type="submit" name="item" value="Candy">🍬 Candy - $10</button><br>
+<button type="submit" name="item" value="No Homework Pass">📝 No Homework Pass - $200</button>
+</form>
+</div>
+
+<div class="card">
+<h3>📦 Your Orders</h3>
+<table>
+<tr><th>Item</th><th>Date</th><th>Status</th><th>Reason</th></tr>
+{% for o in info.orders %}
+<tr>
+<td>{{ o.item }}</td>
+<td>{{ o.date }}</td>
+<td>{{ o.status }}</td>
+<td>{{ o.reason }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
+<p><a href="{{ url_for('logout') }}">Logout</a></p>
+</body>
+</html>
