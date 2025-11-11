@@ -8,113 +8,113 @@
         "role": "developer"
     },
     "kumarn": {
-        "password": "kumarpw",
+        "password": "18429",
         "role": "student",
-        "balance": 2.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "kennedyn": {
-        "password": "kenpw",
+        "password": "75036",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "luca2n": {
-        "password": "lucapw",
+        "password": "49210",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "lucan": {
-        "password": "lucapw2",
+        "password": "61385",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "calebn": {
-        "password": "calebpw",
+        "password": "20547",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "tyn": {
-        "password": "typw",
+        "password": "87951",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "ashlynn": {
-        "password": "ashpw",
+        "password": "34602",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "stevien": {
-        "password": "stepw",
+        "password": "98147",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "aubreyn": {
-        "password": "aubpw",
+        "password": "52764",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "katn": {
-        "password": "katpw",
+        "password": "43891",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "kasen": {
-        "password": "kaspw",
+        "password": "65023",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "ethann": {
-        "password": "ethpw",
+        "password": "71984",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "kayn": {
-        "password": "kaypw",
+        "password": "86450",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
     },
     "reesen": {
-        "password": "reespw",
+        "password": "30279",
         "role": "student",
-        "balance": 100.0,
+        "balance": 10.0,
         "savings_balance": 0.0,
         "lock_until": null,
         "orders": []
